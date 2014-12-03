@@ -5,12 +5,27 @@ PwAngular
 
 $page->getPage()  
 $page->getPage(1015)  
- 
-$page->getChildren()  
-$page->getChildren(2024)  
-$page->getChildren('template=products')  
 
-$page->createPage()
+##How to use $page->getPage()
+Saves a page under the processwire tree given the parent id, template name, title and JSON with inputfields and data
+```javascript
+	app.controller('myCtrl', function ($scope) {
+	  	$scope.blog = [];		
+	  	$scope.blog = <?=$page->getPage()?>;							// get data of actual page
+	  	$scope.blog = <?=$page->getPage(1045)?>;						// get data of page that matches the id
+	});
+```
+ 
+##How to use $page->getChildren()
+Saves a page under the processwire tree given the parent id, template name, title and JSON with inputfields and data
+```javascript
+	app.controller('myCtrl', function ($scope) {
+	  	$scope.children = [];			
+	  	$scope.children = <?=$page->getChildren()?>;					// get children and its data of the actual page
+	  	$scope.children = <?=$page->getChildren(1077)?>;				// will get the children of the page with the indicated ID
+	  	$scope.children = <?=$page->getChildren('template=products')?>;	// children of the page that matches the selector
+	});
+```
 
 ##How to use $page->createPage()
 Saves a page under the processwire tree given the parent id, template name, title and JSON with inputfields and data
@@ -20,3 +35,7 @@ Saves a page under the processwire tree given the parent id, template name, titl
 	  	<?=$page->createPage(1077,'mytemplate','The Title', '{"body":"text in body"}')?>;
 	});
 ```
+
+
+
+
