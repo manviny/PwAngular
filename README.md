@@ -3,12 +3,12 @@ PwAngular
 
 ##Methods
 
-$page->getPage()
-$page->getPage(1015)
+$page->getPage()  
+$page->getPage(1015)  
  
-$page->getChildren()
-$page->getChildren(2024)
-$page->getChildren('template=products')
+$page->getChildren()  
+$page->getChildren(2024)  
+$page->getChildren('template=products')  
 
 $page->createPage
 
