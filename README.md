@@ -13,6 +13,7 @@ $page->getChildren('template=products')
 $page->createPage()
 
 ##How to use $page->createPage()
+Saves a page under the processwire tree given the parent id, template name, title and JSON with inputfields and data
 ```javascript
 	app.controller('myCtrl', function ($scope) {
 	  	// $page->createPage( pageID,'template','title', '{"fieldName":"value"}')
