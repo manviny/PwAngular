@@ -1,0 +1,273 @@
+<?php
+
+/**
+ * ProcessWire 'Hello world' demonstration module
+ *
+ * Demonstrates the Module interface and how to add hooks.
+ * 
+ * See README file for further links regarding module development.
+ * 
+ * ProcessWire 2.x 
+ * Copyright (C) 2014 by Ryan Cramer 
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ * 
+ * http://processwire.com
+ *
+ */
+
+class PwAngular extends WireData implements Module, ConfigurableModule {
+
+	/**
+	 * getModuleInfo is a module required by all modules to tell ProcessWire about them
+	 *
+	 * @return array
+	 *
+	 */
+	public static function getModuleInfo() {
+
+		return array(
+
+			// The module'ss title, typically a little more descriptive than the class name
+			'title' => 'PW and AngularJS', 
+
+			// version number 
+			'version' => 3, 
+
+			// summary is brief description of what this module is
+			'summary' => 'a clean way to use angularjs + API to use PW in javascript',
+			
+			// Optional URL to more information about the module
+			'href' => 'http://processwire.com',
+
+			// singular=true: indicates that only one instance of the module is allowed.
+			// This is usually what you want for modules that attach hooks. 
+			'singular' => true, 
+
+			// autoload=true: indicates the module should be started with ProcessWire.
+			// This is necessary for any modules that attach runtime hooks, otherwise those
+			// hooks won't get attached unless some other code calls the module on it's own.
+			// Note that autoload modules are almost always also 'singular' (seen above).
+			'autoload' => true, 
+		
+			// Optional font-awesome icon name, minus the 'fa-' part
+			'icon' => 'smile-o', 
+			);
+	}
+
+	/**
+	 * Initialize the module
+	 *
+	 * ProcessWire calls this when the module is loaded. For 'autoload' modules, this will be called
+	 * when ProcessWire's API is ready. As a result, this is a good place to attach hooks. 
+	 *
+	 */
+	public function init() {
+
+		// add a hook after each page is rendered and modify the output
+		$this->addHookAfter('Page::render', $this, 'addAngular'); 
+		$this->addHook('Page::getPage', $this, 'getPage');
+		$this->addHook('Page::getChildren', $this, 'getChildren');
+		$this->addHook('Page::createPage', $this, 'createPage');
+
+	}
+
+	/**
+	 * [getModuleConfigInputfields description]
+	 * @param  array  $data [description]
+	 * @return [type]       [description]
+	 */
+    public static function getModuleConfigInputfields(array $data) {
+        $inputfields = new InputfieldWrapper(); 
+ 
+        // ask for their full name
+        $field = wire('modules')->get('InputfieldTextarea');
+        $field->name = 'scripts';
+        $field->label = "Enter scripts";
+        $field->description = '<script src="https://code.angularjs.org/1.3.2/angular-sanitize.min.js"></script>  <script src="http://cdn.jsdelivr.net/angular.ngtable/0.3.3/ng-table.js"></script> ';
+        if(isset($data['scripts'])) $field->value = $data['scripts'];
+        $inputfields->add($field); 
+  
+        // ask for their full name
+        $field = wire('modules')->get('InputfieldText');
+        $field->name = 'injector';
+        $field->label = "Enter injector names";
+        $field->description = "'ngSanitize','ngTable'";
+        if(isset($data['injector'])) $field->value = $data['injector'];
+        $inputfields->add($field); 
+ 
+ 
+        return $inputfields; 
+    }
+
+	/**
+	 * [addAngular description]
+	 * @param [type] $event [description]
+	 */
+	public function addAngular($event) {
+
+		$page = $event->object; 
+
+		// don't add this to the admin pages
+		if($page->template == 'admin') return;
+
+		// 1.- add angular 
+		
+		$angular =  '<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.2/angular.min.js"></script>';
+		$angular .= $this->scripts;
+		$angular .= "<script>var app = angular.module('myApp', [{$this->injector}])</script>";
+		$angular .=	"</head>";
+					
+		$event->return = str_replace("</head>", $angular, $event->return); 
+
+		// 2.- add ng-app="myApp" to body tag
+		$body = "<body";
+		$bodypos = strpos($body, "<body");
+		$bodypos_end = $bodypos + strlen("<body");
+		$newbody = substr_replace($body, ' ng-app="myApp" ', $bodypos_end, 0);
+		$event->return = str_replace("<body", $newbody, $event->return); 
+
+		// 3.- add $page data to var = page (php -> javascript) 
+		// $script =
+		// 	"<script>".
+		// 		"app.controller('especialidadesCtrl', function (\$scope) {".
+		// 		  	"\$scope.children = [];".			
+		// 		  	// "$scope.children = ". wire('page')->children.
+		// 		  	"\$scope.children = 'hi there' ".
+		// 		"});".
+		// 	"</script>".
+		// 	"</body>";	
+		// $event->return = str_replace("</body>", $script, $event->return); 		
+
+	}
+
+
+	/**
+	 * [getPage description]
+	 * @param  [type] $event [description]
+	 * @return [type]        [description]
+	 */
+	public function getPage($event) {
+
+		// A - returns children of actual page
+		$pagina = $event->object; 
+
+	    // B - returns children of page with certain ID
+		if (is_int($event->arguments[0])) { $pagina->id = $event->arguments[0]; }
+		
+
+		$array = array(); 
+        // fields to be avoided
+        $avoid = array("FieldtypeFieldsetOpen", "FieldtypeFieldsetClose","FieldtypeFieldsetTabOpen","FieldtypeFieldsetTabClose");
+		$array['id'] = $pagina->id;
+		
+		foreach($pagina->fields as $field) {
+			if (!in_array($field->type, $avoid)) {
+				// si el campo no esta vacio
+				if( htmlspecialchars($pagina->get($field->name)) )
+					if($field->type == "FieldtypePage"){
+							$buscar = htmlspecialchars($pagina->get($field->name));
+							$paginas = $pages->get($buscar); 
+							$array[$field->name] = $paginas->title;
+						
+				}
+				else {
+					$array[$field->name] = htmlspecialchars($pagina->get($field->name));
+				}
+			}
+		}
+
+		$event->return = json_encode($array);
+	}
+	
+
+	/**
+	 * [getChildren description]
+	 * @param  [type] $event [description]
+	 * @return [type]        [description]
+	 */
+	public function getChildren($event) {
+		
+		// A - returns children of actual page
+		$pagina = $event->object; 
+
+	    // B - returns children of page with certain ID
+		if (is_int($event->arguments[0])) { $pagina->id = $event->arguments[0]; }
+
+	    $paginas = $pagina->children;
+
+		// C - return pages that fit selector ex 'template=product'
+		if (is_string($event->arguments[0])) { 
+			$selector = $event->arguments[0]; 
+			$paginas = wire('pages')->find($selector);
+		}
+		
+		
+
+	    // fields to be avoided
+	    $avoid = array("FieldtypeFieldsetOpen", "FieldtypeFieldsetClose","FieldtypeFieldsetTabOpen","FieldtypeFieldsetTabClose");
+	    // fields that must be returned
+	    $wanted = $fields;
+	 
+	 
+		$arr = array(); 
+	    foreach ($paginas as $child) {
+	 
+			$array = array(); 
+	 
+			foreach($child->fields as $field) {
+	 
+				$array['id'] = $child->id;
+	 
+				// if we dont' want all fields back
+				if (  !in_array($field->type, $avoid)   &&   in_array($field->name, $wanted) && (count($wanted)>0) ) {
+					$array[$field->name] = htmlspecialchars($child->get($field->name));
+				}
+	 
+				// we want all fields back
+				if (  !in_array($field->type, $avoid) && (count($wanted)==0) ) {
+					$array[$field->name] = htmlspecialchars($child->get($field->name));
+				}			
+	 
+			}
+			array_push($arr, $array);
+	    }
+	 
+
+		$event->return = json_encode($arr);
+	}
+
+	/**
+	 * Creates a new page ex: $page->createPage( 1077, 'mytemplate', 'mmy Title' )
+	 * @param  [type] $event (id, template, title)
+	 * @return [type]        [description]
+	 */
+	public function createPage($event) {
+
+		$parent = wire('pages')->get($event->arguments[0]); 
+		$template = $event->arguments[1]; 
+		$title = $event->arguments[2]; 
+		$name =	wire('sanitizer')->pageName($title, true);
+		$jsonData = json_decode($event->arguments[3]);
+
+		// Create the page
+
+	  	$p = new Page();
+
+	  	$p->template = $template;
+	  	$p->parent = $parent;
+	  	$p->title = $title; 
+	  	$p->name = $name;
+
+	  	// rest of fields
+		foreach ($jsonData as $key => $value) { 
+		    $p->set($key, $value);
+		}	  	
+
+
+	  	$p->of(false); 
+		$p->save();
+
+	}
+
+	
+}
