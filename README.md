@@ -1,10 +1,7 @@
 PwAngular
 =========
 
-##Methods
-
-$page->getPage()  
-$page->getPage(1015)  
+#Methods
 
 ##How to use $page->getPage()
 Saves a page under the processwire tree given the parent id, template name, title and JSON with inputfields and data
