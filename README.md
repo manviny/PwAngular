@@ -10,7 +10,7 @@ $page->getChildren()
 $page->getChildren(2024)  
 $page->getChildren('template=products')  
 
-$page->createPage
+$page->createPage()
 
 ##How to use $page->createPage()
 ```javascript
