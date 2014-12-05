@@ -68,7 +68,7 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 		$this->addHook('Page::getPage', $this, 'getPage');
 		$this->addHook('Page::getChildren', $this, 'getChildren');
 		$this->addHook('Page::createPage', $this, 'createPage');
-                $this->addHook('Page::getUser', $this, 'getUser');
+        $this->addHook('Page::getUser', $this, 'getUser');
 	}
 
 	/**
@@ -169,7 +169,7 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 							$paginas = $pages->get($buscar); 
 							$array[$field->name] = $paginas->title;
 						
-				}
+					}
 				else {
 					$array[$field->name] = htmlspecialchars($pagina->get($field->name));
 				}
