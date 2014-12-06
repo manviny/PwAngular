@@ -171,7 +171,9 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 						
 					}
 				else {
-					$array[$field->name] = htmlspecialchars($pagina->get($field->name));
+					// if textarea do not strip html tags
+					if($field->type == "FieldtypeTextarea" || $field->type == "FieldtypeTextareaLanguage" ){$array[$field->name] = $pagina->get($field->name);}
+					else {$array[$field->name] = htmlspecialchars($pagina->get($field->name));}					
 				}
 			}
 		}
@@ -196,12 +198,13 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 
 		//	A -	$page->getChildren()	
 		$pagina = $event->object; 
-
+		$paginas = $pagina->children;	// get children
 
 		// 	B -	$page->getChildren(1044)
-		if (is_int($event->arguments[0])) { $pagina->id = $event->arguments[0]; }
-		
-	    $paginas = $pagina->children;	// get children
+		if (is_int($event->arguments[0])) { 
+			$pagina->id = $event->arguments[0]; 
+			$paginas =  wire("pages")->get($event->arguments[0])->children();
+		}
 
 
 		// 	C -	$page->getChildren('template=product')
@@ -222,6 +225,7 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 	 		// each field in child
 			foreach($child->fields as $field) {
 				$array['id'] = $child->id;
+				$array['url'] = $child->path;
 				switch ($field->type) {
 				    case "FieldtypePage":		// page
 				        $array[$field->name] = $this->getFromArrayOfPages($field->name);
@@ -229,8 +233,16 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 				    case "FieldtypePageTable":	// array of pages
 				        $array[$field->name] = $this->getFromArrayOfPages($child->get($field->name));
 				        break;
+				    case "FieldtypeTextarea":	// text area
+				        $array[$field->name] = ($child->get($field->name));
+				        break;
+				    case "FieldtypeTextareaLanguage":	// text area language
+				        $array[$field->name] = ($child->get($field->name));
+				        break;
 				    default:
 				        $array[$field->name] = htmlspecialchars($child->get($field->name));
+				        // $array[$field->name] = htmlentities($child->get($field->name));
+				        // $array[$field->name] = htmlspecialchars($child->get($field->name), ENT_QUOTES,'ISO-8859-1' );
 				}
 			}
 			array_push($arr, $array);	// push  child to main array
@@ -263,7 +275,9 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 		$array = array();
 		$array['id'] = $pagina->id;
 		foreach($pagina->fields as $field) {
-			$array[$field->name] = ($pagina->get($field->name));
+			// if textarea do not strip html tags
+			if($field->type == "FieldtypeTextarea" || $field->type == "FieldtypeTextareaLanguage" ){$array[$field->name] = $pagina->get($field->name);}
+			else {$array[$field->name] = htmlspecialchars($pagina->get($field->name));}
 		}
 
 		return $array;
