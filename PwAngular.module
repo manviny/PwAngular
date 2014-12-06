@@ -181,60 +181,95 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 	
 
 	/**
-	 * [getChildren description]
-	 * @param  [type] $event [description]
-	 * @return [type]        [description]
+	 * $page->getChildren()
+	 * $page->getChildren(id)
+	 * $page->getChildren(selector)
+	 * @param  [ |int|string] $event 
+	 * @return json   Children fields and values of actual or desired page
 	 */
 	public function getChildren($event) {
+
 		
-		// A - returns children of actual page
+	    // fields to be avoided, irrelevant in javascript
+	    $avoid = array("FieldtypeFieldsetOpen", "FieldtypeFieldsetClose","FieldtypeFieldsetTabOpen","FieldtypeFieldsetTabClose");
+
+
+		//	A -	$page->getChildren()	
 		$pagina = $event->object; 
 
-	    // B - returns children of page with certain ID
+
+		// 	B -	$page->getChildren(1044)
 		if (is_int($event->arguments[0])) { $pagina->id = $event->arguments[0]; }
+		
+	    $paginas = $pagina->children;	// get children
 
-	    $paginas = $pagina->children;
 
-		// C - return pages that fit selector ex 'template=product'
+		// 	C -	$page->getChildren('template=product')
 		if (is_string($event->arguments[0])) { 
 			$selector = $event->arguments[0]; 
 			$paginas = wire('pages')->find($selector);
 		}
 		
-		
 
-	    // fields to be avoided
-	    $avoid = array("FieldtypeFieldsetOpen", "FieldtypeFieldsetClose","FieldtypeFieldsetTabOpen","FieldtypeFieldsetTabClose");
-	    // fields that must be returned
-	    $wanted = $fields;
-	 
 	 
 		$arr = array(); 
+
+		// children in page
 	    foreach ($paginas as $child) {
 	 
 			$array = array(); 
 	 
+	 		// each field in child
 			foreach($child->fields as $field) {
-	 
 				$array['id'] = $child->id;
-	 
-				// if we dont' want all fields back
-				if (  !in_array($field->type, $avoid)   &&   in_array($field->name, $wanted) && (count($wanted)>0) ) {
-					$array[$field->name] = htmlspecialchars($child->get($field->name));
+				switch ($field->type) {
+				    case "FieldtypePage":		// page
+				        $array[$field->name] = $this->getFromArrayOfPages($field->name);
+				        break;
+				    case "FieldtypePageTable":	// array of pages
+				        $array[$field->name] = $this->getFromArrayOfPages($child->get($field->name));
+				        break;
+				    default:
+				        $array[$field->name] = htmlspecialchars($child->get($field->name));
 				}
-	 
-				// we want all fields back
-				if (  !in_array($field->type, $avoid) && (count($wanted)==0) ) {
-					$array[$field->name] = htmlspecialchars($child->get($field->name));
-				}			
-	 
 			}
-			array_push($arr, $array);
+			array_push($arr, $array);	// push  child to main array
 	    }
-	 
 
 		$event->return = json_encode($arr);
 	}
+
+	/**
+	 * loop through the PageArray and returns its fields
+	 * @param  PageArray $paginas [description]
+	 * @return [type]          [description]
+	 */
+	protected function getFromArrayOfPages($paginas) {
+		$array = array();
+		foreach($paginas->getArray() as $pagina) {
+			array_push($array,  $this->getPageFields($pagina));
+		}
+		return ($array);
+	}
+
+
+	/**
+	 * Get fields and values from a single page
+	 * @param  [type] $pagina [description]
+	 * @return [type]         [description]
+	 */
+	protected function getPageFields($pagina) {
+
+		$array = array();
+		$array['id'] = $pagina->id;
+		foreach($pagina->fields as $field) {
+			$array[$field->name] = ($pagina->get($field->name));
+		}
+
+		return $array;
+	}
+
+
 
 	/**
 	 * Creates a new page ex: $page->createPage( 1077, 'mytemplate', 'mmy Title' )
