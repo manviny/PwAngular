@@ -69,6 +69,7 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 		$this->addHook('Page::getChildren', $this, 'getChildren');
 		$this->addHook('Page::createPage', $this, 'createPage');
         $this->addHook('Page::getUser', $this, 'getUser');
+        $this->addHook('Page::loginUser', $this, 'loginUser');
 	}
 
 	/**
@@ -292,11 +293,11 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 	 */
 	public function createPage($event) {
 
-		$parent = wire('pages')->get($event->arguments[0]); 
-		$template = $event->arguments[1]; 
-		$title = $event->arguments[2]; 
-		$name =	wire('sanitizer')->pageName($title, true);
-		$jsonData = json_decode($event->arguments[3]);
+		$parent = wire('pages')->get($event->arguments[0]); 	// parent id
+		$template = $event->arguments[1]; 						// template
+		$title = $event->arguments[2]; 							// title
+		$name =	wire('sanitizer')->pageName($title, true);		// name
+		$jsonData = json_decode($event->arguments[3]);			// Data
 
 		// Create the page
 
@@ -322,6 +323,32 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
         // fields to be avoided
 		$array['name'] = wire ("user")->name;
 		$event->return = json_encode($array);
-	}
+	}	
+
+	public function loginUser($event) {
+      
+        $user = wire("sanitizer")->username($event->arguments[0]);
+        $pass = $event->arguments[1]; 
+
+        if(wire("session")->login($user, $pass)) {
+          // login successful
+			$event->return = "true";
+        }
+		$array['name'] = wire ("user")->name;
+		$array['name'] = $event->arguments[0];
+		$event->return = json_encode($array);
+
+
+   //      wire("user")->name = wire("sanitizer")->username($event->arguments[0]);
+   //      wire("user")->pass = $event->arguments[1]; 
+
+   //      if(wire("session")->login(wire("user")->name, wire("user")->pass)) {
+   //        // login successful
+			// $event->return = "true";
+   //      }
+   //      $event->return = "false";
+
+     }
+	
 	
 }
