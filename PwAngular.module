@@ -320,8 +320,9 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 	}
 	
 	public function getUser($event) {
-        // fields to be avoided
-		$array['name'] = wire ("user")->name;
+        $array = array();
+		$array['name'] = wire("user")->name;
+		$array['language'] = "".wire("user")->language->title;
 		$event->return = json_encode($array);
 	}	
 
