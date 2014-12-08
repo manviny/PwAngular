@@ -36,15 +36,15 @@ Saves a page under the processwire tree given the parent id, template name, titl
 Useful angularjs
 ================
 
-##N number of words
+####N number of words
 ```javascript
 	string.split(' ', 8).join(' ')
 ```
-##Default value when empty
+####Default value when empty
 ```javascript
 	{{ lit.title || 'not available' }}
 ```
-##Conditional class
+####Conditional class
 ```javascript
 	ng-class="{active: $index==0}"
 ```
