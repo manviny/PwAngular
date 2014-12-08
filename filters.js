@@ -1,12 +1,4 @@
-
-	/**
-	 * Useful javascript
-	 */
-
-	// return number of words
-	// string.split(' ', 8).join(' ')
-
-
+	
 	/**
 	 * trust HTML will output html as it is
 	 * <div ng-bind-html="htmlString | unsafe "></div>
