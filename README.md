@@ -52,6 +52,13 @@ $http.post('http://ip/web-service/', {action: 'getChildren', pageId: 1062 })
     console.debug("children",data);
 })
 ```
+Find pages by selector
+```javascript
+$http.post('http://ip/web-service/', {action: 'find', selector: 'template=directivo,parent=1077' })
+.success(function(data) {
+    console.debug("children",data);
+})
+```
 
 Useful angularjs
 ================
