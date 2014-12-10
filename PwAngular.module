@@ -373,9 +373,17 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 
 
 		switch ($action) {
-		    case "getPage":									// $http.post('http://ip/web-service/', {action: 'getPage', pageId: 1046 })
+
+		    // $http.post('http://ip/web-service/', {action: 'getPage', pageId: 1046 })
+		    case "getPage":									
 				$pageId = $getPost['pageId'];
 				$event->return =$this->get_Page($pageId);
+		        break;	
+
+		    // $http.post('http://ip/web-service/', {action: 'getChildren', pageId: 1046 })    
+		    case "getChildren":								
+				$pageId = $getPost['pageId'];
+				$event->return =$this->get_Children($pageId);
 		        break;		
 
 		}
@@ -417,6 +425,52 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 			}
 		}
 		return json_encode($array);
+	}
+	
+	protected function get_Children($pageId) {
+	
+
+		$paginas = wire('pages')->get($pageId)->children;
+
+		// $array = array(); 
+
+        // fields to be avoided
+        $avoid = array("FieldtypeFieldsetOpen", "FieldtypeFieldsetClose","FieldtypeFieldsetTabOpen","FieldtypeFieldsetTabClose");
+
+		$array['id'] = $pagina->id;
+		
+		$arr = array(); 
+		// children in page
+	    foreach ($paginas as $child) {
+	
+			$array = array(); 
+	 
+	 		// each field in child
+			foreach($child->fields as $field) { 
+				$array['id'] = $child->id;
+				$array['url'] = $child->path;
+				switch ($field->type) {
+				    case "FieldtypePage":		// page
+				        $array[$field->name] = $this->getFromArrayOfPages($field->name);
+				        break;
+				    case "FieldtypePageTable":	// array of pages
+				        $array[$field->name] = $this->getFromArrayOfPages($child->get($field->name));
+				        break;
+				    case "FieldtypeTextarea":	// text area
+				        $array[$field->name] = ($child->get($field->name));
+				        break;
+				    case "FieldtypeTextareaLanguage":	// text area language
+				        $array[$field->name] = ($child->get($field->name));
+				        break;
+				    default:
+				        $array[$field->name] = htmlspecialchars($child->get($field->name)); 
+				        // $array[$field->name] = htmlentities($child->get($field->name));
+				        // $array[$field->name] = htmlspecialchars($child->get($field->name), ENT_QUOTES,'ISO-8859-1' );
+				}
+			}
+			array_push($arr, $array);	// push  child to main array
+	    }
+		return json_encode($arr);
 	}
 
 
