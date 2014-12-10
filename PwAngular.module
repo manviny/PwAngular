@@ -355,7 +355,7 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
      }
 
      /**
-      * $http.post('http://130.211.77.41/web-service/', {action: 'getPage', msg:'hello word!'})
+      * $http.post('http://ip/web-service/', {action: 'getPage', msg:'hello word!'})
       * @param  [type] $event [description]
       * @return [type]        [description]
       */
