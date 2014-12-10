@@ -38,13 +38,20 @@ Saves a page under the processwire tree given the parent id, template name, titl
 
 Javascript (angularjs) calls that get  json data
 ================================================
+Get page by ID
 ```javascript
 $http.post('http://ip/web-service/', {action: 'getPage', pageId: 1046 })
 .success(function(data) {
     console.debug("success",data);
 })
 ```
-
+Get children by parent id
+```javascript
+$http.post('http://ip/web-service/', {action: 'getChildren', pageId: 1062 })
+.success(function(data) {
+    console.debug("children",data);
+})
+```
 
 Useful angularjs
 ================
