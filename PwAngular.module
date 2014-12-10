@@ -384,6 +384,12 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 		    case "getChildren":								
 				$pageId = $getPost['pageId'];
 				$event->return =$this->get_Children($pageId);
+		        break;	
+
+		    // $http.post('http://ip/web-service/', {action: 'find', selector: 'template=directivo,parent=1077' })    
+		    case "find":								
+				$selector = $getPost['selector'];
+				$event->return =$this->pages_find($selector);
 		        break;		
 
 		}
@@ -432,7 +438,52 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 
 		$paginas = wire('pages')->get($pageId)->children;
 
-		// $array = array(); 
+
+        // fields to be avoided
+        $avoid = array("FieldtypeFieldsetOpen", "FieldtypeFieldsetClose","FieldtypeFieldsetTabOpen","FieldtypeFieldsetTabClose");
+
+		$array['id'] = $pagina->id;
+		
+		$arr = array(); 
+		// children in page
+	    foreach ($paginas as $child) {
+	
+			$array = array(); 
+	 
+	 		// each field in child
+			foreach($child->fields as $field) { 
+				$array['id'] = $child->id;
+				$array['url'] = $child->path;
+				switch ($field->type) {
+				    case "FieldtypePage":		// page
+				        $array[$field->name] = $this->getFromArrayOfPages($field->name);
+				        break;
+				    case "FieldtypePageTable":	// array of pages
+				        $array[$field->name] = $this->getFromArrayOfPages($child->get($field->name));
+				        break;
+				    case "FieldtypeTextarea":	// text area
+				        $array[$field->name] = ($child->get($field->name));
+				        break;
+				    case "FieldtypeTextareaLanguage":	// text area language
+				        $array[$field->name] = ($child->get($field->name));
+				        break;
+				    default:
+				        $array[$field->name] = htmlspecialchars($child->get($field->name)); 
+				        // $array[$field->name] = htmlentities($child->get($field->name));
+				        // $array[$field->name] = htmlspecialchars($child->get($field->name), ENT_QUOTES,'ISO-8859-1' );
+				}
+			}
+			array_push($arr, $array);	// push  child to main array
+	    }
+		return json_encode($arr);
+	}	
+
+
+	protected function pages_find($selector) {
+	
+
+		$paginas = wire('pages')->find($selector);
+
 
         // fields to be avoided
         $avoid = array("FieldtypeFieldsetOpen", "FieldtypeFieldsetClose","FieldtypeFieldsetTabOpen","FieldtypeFieldsetTabClose");
