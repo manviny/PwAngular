@@ -70,6 +70,8 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 		$this->addHook('Page::createPage', $this, 'createPage');
         $this->addHook('Page::getUser', $this, 'getUser');
         $this->addHook('Page::loginUser', $this, 'loginUser');
+        $this->addHook('ProcessPageView::pageNotFound', $this, 'webService');
+        // $this->addHookBefore('Page::render', $this, 'webService');
 	}
 
 	/**
@@ -125,7 +127,8 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 		$bodypos = strpos($body, "<body");
 		$bodypos_end = $bodypos + strlen("<body");
 		$newbody = substr_replace($body, ' ng-app="myApp" ', $bodypos_end, 0);
-		$event->return = str_replace("<body", $newbody, $event->return); 
+		$event->return = str_replace("<body", $newbody, $event->return);
+
 
 		// 3.- add $page data to var = page (php -> javascript) 
 		// $script =
@@ -340,16 +343,82 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 		$event->return = json_encode($array);
 
 
-   //      wire("user")->name = wire("sanitizer")->username($event->arguments[0]);
-   //      wire("user")->pass = $event->arguments[1]; 
+		   //      wire("user")->name = wire("sanitizer")->username($event->arguments[0]);
+		   //      wire("user")->pass = $event->arguments[1]; 
 
-   //      if(wire("session")->login(wire("user")->name, wire("user")->pass)) {
-   //        // login successful
-			// $event->return = "true";
-   //      }
-   //      $event->return = "false";
+		   //      if(wire("session")->login(wire("user")->name, wire("user")->pass)) {
+		   //        // login successful
+					// $event->return = "true";
+		   //      }
+		   //      $event->return = "false";
 
      }
+
+     /**
+      * $http.post('http://130.211.77.41/web-service/', {action: 'getPage', msg:'hello word!'})
+      * @param  [type] $event [description]
+      * @return [type]        [description]
+      */
+	public function webService($event) {
+
+		// Check if asking for a web service
+        $url = $event->arguments('url');
+        if ($url != '/web-service/') return; //Let pageNotFound() handle it
+		header($_SERVER['SERVER_PROTOCOL'] . ' 200 OK', true, 200);
+
+		// Get post Data
+		$request = file_get_contents('php://input');
+		$getPost = json_decode($request,true);
+		$action = $getPost['action'];
+
+
+		switch ($action) {
+		    case "getPage":									// $http.post('http://ip/web-service/', {action: 'getPage', pageId: 1046 })
+				$pageId = $getPost['pageId'];
+				$event->return =$this->get_Page($pageId);
+		        break;		
+
+		}
+
+	}
+
+
+	/**
+	 * 	
+	 */
 	
+	protected function get_Page($pageId) {
+	
+
+		$pagina = wire('pages')->get($pageId);
+
+		$array = array(); 
+
+        // fields to be avoided
+        $avoid = array("FieldtypeFieldsetOpen", "FieldtypeFieldsetClose","FieldtypeFieldsetTabOpen","FieldtypeFieldsetTabClose");
+
+		$array['id'] = $pagina->id;
+		
+		foreach($pagina->fields as $field) {
+			if (!in_array($field->type, $avoid)) {
+				// si el campo no esta vacio
+				if( htmlspecialchars($pagina->get($field->name)) )
+					if($field->type == "FieldtypePage"){
+							$buscar = htmlspecialchars($pagina->get($field->name));
+							$paginas = $pages->get($buscar); 
+							$array[$field->name] = $paginas->title;
+						
+					}
+				else {
+					// if textarea do not strip html tags
+					if($field->type == "FieldtypeTextarea" || $field->type == "FieldtypeTextareaLanguage" ){$array[$field->name] = $pagina->get($field->name);}
+					else {$array[$field->name] = htmlspecialchars($pagina->get($field->name));}					
+				}
+			}
+		}
+		return json_encode($array);
+	}
+
+
 	
 }
