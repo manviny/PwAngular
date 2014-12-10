@@ -1,7 +1,9 @@
 PwAngular
 =========
 
-#Methods
+PHP Methods that return json data
+=================================
+
 
 ##How to use $page->getPage()
 Saves a page under the processwire tree given the parent id, template name, title and JSON with inputfields and data
@@ -32,6 +34,17 @@ Saves a page under the processwire tree given the parent id, template name, titl
 	  	<?=$page->createPage(1077,'mytemplate','The Title', '{"body":"text in body"}')?>;
 	});
 ```
+
+
+Javascript (angularjs) calls that get  json data
+================================================
+```javascript
+$http.post('http://130.211.77.41/web-service/', {action: 'getPage', pageId: 1046 })
+.success(function(data) {
+    console.debug("success",data);
+})
+```
+
 
 Useful angularjs
 ================
