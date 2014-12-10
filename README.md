@@ -39,7 +39,7 @@ Saves a page under the processwire tree given the parent id, template name, titl
 Javascript (angularjs) calls that get  json data
 ================================================
 ```javascript
-$http.post('http://130.211.77.41/web-service/', {action: 'getPage', pageId: 1046 })
+$http.post('http://ip/web-service/', {action: 'getPage', pageId: 1046 })
 .success(function(data) {
     console.debug("success",data);
 })
