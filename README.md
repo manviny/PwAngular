@@ -67,6 +67,11 @@ Useful angularjs
 ```javascript
 	string.split(' ', 8).join(' ')
 ```
+
+####first paragraph
+```javascript
+	string.split('.', 1).join('.').concat('...')
+```
 ####Default value when empty
 ```javascript
 	{{ lit.title || 'not available' }}
