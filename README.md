@@ -59,7 +59,13 @@ $http.post('http://ip/web-service/', {action: 'find', selector: 'template=direct
     console.debug("children",data);
 })
 ```
-
+Get number of children of a given page
+```javascript
+$http.post('http://ip/web-service/', { action: 'numChildren', pageId: 1014 })
+.success(function(data) {
+    console.debug("number of children",data);
+})
+```
 Useful angularjs
 ================
 
