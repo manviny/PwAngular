@@ -390,6 +390,13 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 		    case "find":								
 				$selector = $getPost['selector'];
 				$event->return =$this->pages_find($selector);
+		        break;	
+
+		    // $http.post('http://ip/web-service/', {action: 'numChildren'})    
+		    case "numChildren":	
+		    	$pageId = $getPost['pageId'];	
+		    	$paginas = wire('pages')->get($pageId)->numChildren();					
+				$event->return = "ll".$paginas;
 		        break;		
 
 		}
