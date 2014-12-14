@@ -63,6 +63,7 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 	 */
 	public function init() {
 
+
 		// add a hook after each page is rendered and modify the output
 		$this->addHookAfter('Page::render', $this, 'addAngular'); 
 		$this->addHook('Page::getPage', $this, 'getPage');
@@ -72,6 +73,9 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
         $this->addHook('Page::loginUser', $this, 'loginUser');
         $this->addHook('ProcessPageView::pageNotFound', $this, 'webService');
         // $this->addHookBefore('Page::render', $this, 'webService');
+        
+		// $this->config->scripts->add($this->config->urls->PwAngular . "pwservice.js");
+		// $this->config->scripts->add($config->urls->templates . "js/pwservice.js");
 	}
 
 	/**
@@ -118,6 +122,7 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 		$angular =  '<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.2/angular.min.js"></script>';
 		$angular .= $this->scripts;
 		$angular .= "<script>var app = angular.module('myApp', [{$this->injector}])</script>";
+		$angular .= '<script src="/site/modules/PwAngular/pwservice.js"></script>';
 		$angular .=	"</head>";
 					
 		$event->return = str_replace("</head>", $angular, $event->return); 
@@ -141,7 +146,7 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 		// 	"</script>".
 		// 	"</body>";	
 		// $event->return = str_replace("</body>", $script, $event->return); 		
-
+		// $this->config->scripts->add($this->config->urls->PwAngular . "pwservice.js");
 	}
 
 
@@ -394,9 +399,8 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 
 		    // $http.post('http://ip/web-service/', {action: 'numChildren'})    
 		    case "numChildren":	
-		    	$pageId = $getPost['pageId'];	
-		    	$paginas = wire('pages')->get($pageId)->numChildren();					
-				$event->return = "ll".$paginas;
+		    	$pageId = $getPost['pageId'];					
+				$event->return = wire('pages')->get($pageId)->numChildren();
 		        break;		
 
 		}
