@@ -4,9 +4,10 @@ PwAngular
 Module config
 =============
 **Enter scripts**  
+```
 <script src="https://code.angularjs.org/1.3.2/angular-sanitize.min.js"></script>
 <script src="/site/templates/app/bower_components/angular-translate/angular-translate.min.js"></script>
-
+```
 
 
 PHP Methods that return json data
