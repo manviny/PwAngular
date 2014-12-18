@@ -8,7 +8,10 @@ Module config
 <script src="https://code.angularjs.org/1.3.2/angular-sanitize.min.js"></script>
 <script src="/site/templates/app/bower_components/angular-translate/angular-translate.min.js"></script>
 ```
-
+**Enter injector name**  
+```
+'ngSanitize','pascalprecht.translate'
+```
 
 PHP Methods that return json data
 =================================
