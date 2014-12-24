@@ -98,7 +98,11 @@ Useful angularjs
 ```javascript
 	ng-class="{active: $index==0}"
 ```
-
+####Get Filtered transactions
+```javascript
+   <li ng-repeat="transaccion in (filteredTransacciones = (transacciones | filter:search:strict))"></li>
+```
+ 
 
 
 
