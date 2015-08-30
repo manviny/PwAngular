@@ -323,6 +323,9 @@ return;
 		// don't add this to the admin pages
 		if($page->template == 'admin') return;
 
+
+
+
 		// 1.- add angular  
 		
 		// $this->config->scripts->add($this->config->urls->PwAngular . "angular-sanitize.min.js");
@@ -348,14 +351,18 @@ return;
 
 		$angular .=	"</head>";
 					
-		$event->return = str_replace("</head>", $angular, $event->return); 
 
 		// 2.- add ng-app="myApp" to body tag
-		$body = "<body";
-		$bodypos = strpos($body, "<body");
-		$bodypos_end = $bodypos + strlen("<body");
+		$body = "<html";
+		$bodypos = strpos($body, "<html");
+		$bodypos_end = $bodypos + strlen("<html");
 		$newbody = substr_replace($body, ' ng-app="myApp" ', $bodypos_end, 0);
-		$event->return = str_replace("<body", $newbody, $event->return);
+		$event->return = str_replace("<html", $newbody, $event->return);
+
+
+		$event->return = str_replace("</head>", $angular, $event->return); 
+
+
 
 
 		// 3.- add $page data to var = page (php -> javascript) 
