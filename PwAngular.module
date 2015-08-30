@@ -27,7 +27,7 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 			'title' => 'PW and AngularJS', 
 
 			// version number 
-			'version' => 4.5, 
+			'version' => 1.45, 
 
 			// summary is brief description of what this module is
 			'summary' => 'a clean way to use angularjs + API to use PW in javascript',
@@ -66,11 +66,12 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 		$this->addHook('Page::getChildren', $this, 'getChildren');
 		$this->addHook('Page::createPage', $this, 'createPage');
         $this->addHook('Page::getUser', $this, 'getUser');
+        $this->addHook('Page::registerUser', $this, 'registerUser');
         $this->addHook('Page::loginUser', $this, 'loginUser');
         $this->addHook('ProcessPageView::pageNotFound', $this, 'webService');
         // $this->addHookBefore('Page::render', $this, 'webService');
         
-		// $this->config->scripts->add($this->config->urls->PwAngular . "pwservice.js");
+
 		// $this->config->scripts->add($config->urls->templates . "js/pwservice.js");
 	}
 
@@ -91,10 +92,15 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 		// Get post Data
 		$request = file_get_contents('php://input');
 		$getPost = json_decode($request,true);
-		$action = $getPost['action'];
+		$service = $getPost['action'];
+		$d = $getPost['data'];
 
+		switch ($service) {
 
-		switch ($action) {
+		    // case 'registerUser': registerUser( $d["name"], $d["email"], $d["email2"], $d["password"], $d["password2"] ); break;
+		    // // case 'emailAdmin': sendEmail( "manol@indinet.es", "manol@indinet.es", $d["subject"], $d["message"] ); break;
+		    // // case 'sendEmail': sendEmail( $d["from"], $d["to"], $d["subject"], $d["message"] ); break;
+	    	// default: echo "el servicio no existe";
 
 		    // $http.post('http://ip/web-service/', {action: 'getPage', pageId: 1046 })
 		    case "getPage":									
@@ -124,6 +130,47 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 
 	}
 
+
+
+	/**
+	 * Crea un nuevo usuario en PW
+	 */
+	protected function registerUser($email2, $name, $email, $password, $password2 ){
+
+echo "ha llegado";
+return;
+		/**
+		 * Check for spam and last 2 lines to the code
+		 */
+		if (trim($email2) != '') return 'spam';
+		// <input type="text" name="email2" id="email2">
+		// <style type="text/css">#email2 { display: none; }</style>		
+
+		// el usuario ya existe
+		if(wire('users')->get("email=$email")->id || wire('users')->get("name=$name")->id) { 
+			return "El usuario ya existe"; 
+		}	
+
+		// las constraseña no coinciden
+		if($password!=$password2)
+            return '<div class="alert alert-danger"><i class="fa fa-frown-o"></i> <strong>Las contraseñas</strong> no coinciden</div>';
+		// 
+		$pass = $password;
+		$u = new User();
+
+		// $u->$first_name = $sanitizer->text($input->post->first_name);
+		// $u->$last_name = $sanitizer->text($input->post->last_name);
+		$u->name= wire('sanitizer')->username($name); 
+		$u->email = wire('sanitizer')->email($email);
+		$u->pass = $pass;
+		$u->addRole("guest");
+		// $u->addRole("registrado");
+		$u->language = wire('languages')->get("default");
+		$u->save();
+		return 'usuario '.$u->name.' creado';
+
+
+	}
 
 	/**
 	 * 	
@@ -278,22 +325,24 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 
 		// 1.- add angular  
 		
+		// $this->config->scripts->add($this->config->urls->PwAngular . "angular-sanitize.min.js");
+		// $this->config->scripts->add($this->config->urls->PwAngular . "pwservice.js");
 
 	 	$angular = '';
 	 	$angular .= '<link href="/site/modules/PwAngular/angular-toastr.min.css" rel="stylesheet" type="text/css" />';
 
-	 	$angular .= '<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>';
-		$angular .= '<script src="https://code.angularjs.org/1.4.5/angular-sanitize.min.js"></script>';
-		$angular .= '<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.5/angular-route.js"></script>';
-		$angular .= '<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.5/angular-resource.min.js"></script>';
+	 	$angular .= '<script src="/site/modules/PwAngular/angular.min.js"></script>';
+		$angular .= '<script src="/site/modules/PwAngular/angular-sanitize.min.js"></script>';
+		$angular .= '<script src="/site/modules/PwAngular/angular-route.js"></script>';
+		$angular .= '<script src="/site/modules/PwAngular/angular-resource.min.js"></script>';
 		$angular .= '<script src="/site/modules/PwAngular/angular-toastr.tpls.min.js"></script>';
-	    $angular .= '<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-animate.min.js"></script>';
-	    $angular .= '<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-aria.min.js"></script>';
-	    $angular .= '<script src="https://ajax.googleapis.com/ajax/libs/angular_material/0.10.0/angular-material.min.js"></script>';
+	    $angular .= '<script src="/site/modules/PwAngular/angular-animate.min.js"></script>';
+	    $angular .= '<script src="/site/modules/PwAngular/angular-aria.min.js"></script>';
+	    $angular .= '<script src="/site/modules/PwAngular/angular-material.min.js"></script>';
 		$angular .= $this->scripts;  // add script form module config if any
 
-		// $angular .= "<script>var app = angular.module('myApp', ['ngRoute','ngResource','ngSanitize','ui.bootstrap','ngMaterial', 'toastr'])</script>";
-		$angular .= "<script>var app = angular.module('myApp', ['ngRoute','ngResource','ngSanitize','ui.bootstrap','ngMaterial', 'toastr',{$this->injector}])</script>";
+		$angular .= "<script>var app = angular.module('myApp', ['ngRoute','ngResource','ngSanitize','ui.bootstrap','ngMaterial', 'toastr'])</script>";
+		// $angular .= "<script>var app = angular.module('myApp', ['ngRoute','ngResource','ngSanitize','ui.bootstrap','ngMaterial', 'toastr',{$this->injector}])</script>";
 
 		// $angular .= '<script src="/site/modules/PwAngular/pwservice.js"></script>';
 
