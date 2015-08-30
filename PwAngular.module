@@ -287,14 +287,13 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 		$angular .= '<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.5/angular-route.js"></script>';
 		$angular .= '<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.5/angular-resource.min.js"></script>';
 		$angular .= '<script src="/site/modules/PwAngular/angular-toastr.tpls.min.js"></script>';
-		$angular .= '<script src="/site/modules/PwAngular/angular-toastr.min.js"></script>';
 	    $angular .= '<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-animate.min.js"></script>';
 	    $angular .= '<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular-aria.min.js"></script>';
 	    $angular .= '<script src="https://ajax.googleapis.com/ajax/libs/angular_material/0.10.0/angular-material.min.js"></script>';
 		$angular .= $this->scripts;  // add script form module config if any
 
-		$angular .= "<script>var app = angular.module('myApp', ['ngRoute','ngResource','ngSanitize','ui.bootstrap','ngMaterial', 'toastr'])</script>";
-		// $angular .= "<script>var app = angular.module('myApp', ['ngRoute','ngResource','ngSanitize','ui.bootstrap','ngMaterial', 'toastr',{$this->injector}])</script>";
+		// $angular .= "<script>var app = angular.module('myApp', ['ngRoute','ngResource','ngSanitize','ui.bootstrap','ngMaterial', 'toastr'])</script>";
+		$angular .= "<script>var app = angular.module('myApp', ['ngRoute','ngResource','ngSanitize','ui.bootstrap','ngMaterial', 'toastr',{$this->injector}])</script>";
 
 		// $angular .= '<script src="/site/modules/PwAngular/pwservice.js"></script>';
 
