@@ -1,6 +1,10 @@
 PwAngular
 =========
 
+Instala Angular y otros módulos ( toastr, angular Material...)
+Añade al body ng-controller="TopCtrl" como padre raoz de todos los controladores
+
+
 PHP Methods that return json data
 =================================
 
