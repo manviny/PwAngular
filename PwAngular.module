@@ -27,7 +27,7 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 			'title' => 'PW and AngularJS', 
 
 			// version number 
-			'version' => 1.45, 
+			'version' => 09.01, 
 
 			// summary is brief description of what this module is
 			'summary' => 'a clean way to use angularjs + API to use PW in javascript',
@@ -61,18 +61,25 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 
 
 		// add a hook after each page is rendered and modify the output
-		$this->addHookAfter('Page::render', $this, 'addAngular'); 			// Automatically loads Angular
-		$this->addHook('Page::getPage', $this, 'getPage');
-		$this->addHook('Page::getChildren', $this, 'getChildren');
-		$this->addHook('Page::createPage', $this, 'createPage');
-        $this->addHook('Page::getUser', $this, 'getUser');
+		
+
+		// $this->addHookAfter('Page::render', $this, 'addAngular'); 			// Automatically loads Angular
+		
         $this->addHook('Page::registerUser', $this, 'registerUser');
+        $this->addHook('Page::sendEmail', $this, 'sendEmail');
+		$this->addHook('Page::createPage', $this, 'createPage');
+		$this->addHook('Page::getPage', $this, 'getPage');
         $this->addHook('Page::loginUser', $this, 'loginUser');
-        $this->addHook('ProcessPageView::pageNotFound', $this, 'webService');
-        // $this->addHookBefore('Page::render', $this, 'webService');
+
         
+		$this->addHook('Page::getChildren', $this, 'getChildren');
+        $this->addHook('Page::getUser', $this, 'getUser');
+        $this->addHook('Page::prueba', $this, 'prueba');
+
+        $this->addHook('ProcessPageView::pageNotFound', $this, 'webService');       
 
 		// $this->config->scripts->add($config->urls->templates . "js/pwservice.js");
+		
 	}
 
 
@@ -97,11 +104,6 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 
 		switch ($service) {
 
-		    // case 'registerUser': registerUser( $d["name"], $d["email"], $d["email2"], $d["password"], $d["password2"] ); break;
-		    // // case 'emailAdmin': sendEmail( "manol@indinet.es", "manol@indinet.es", $d["subject"], $d["message"] ); break;
-		    // // case 'sendEmail': sendEmail( $d["from"], $d["to"], $d["subject"], $d["message"] ); break;
-	    	// default: echo "el servicio no existe";
-
 		    // $http.post('http://ip/web-service/', {action: 'getPage', pageId: 1046 })
 		    case "getPage":									
 				$pageId = $getPost['pageId'];
@@ -125,41 +127,91 @@ class PwAngular extends WireData implements Module, ConfigurableModule {
 		    	$pageId = $getPost['pageId'];					
 				$event->return = wire('pages')->get($pageId)->numChildren();
 		        break;		
-
+		    case "registerUser":									
+				$pageId = $getPost['pageId'];
+				$event->return =$this->registerUser($d["name"], $d["email"], $d["email2"], $d["password"], $d["password2"]);
+		        break;		
+		    // $http.post('http://ip/web-service/', {action: 'getPage', pageId: 1046 })
+		    case "sendEmail":									
+				$event->return = $this->sendEmail( $d["from"], $d["to"], $d["subject"], $d["message"] );
+		        break;		
+		    // $http.post('http://ip/web-service/', {action: 'getPage', pageId: 1046 })
+		    case "prueba":									
+				$event->return = $this->prueba($d["subject"], $d["message"]);
+		        break;	
+	    	default: echo "el servicio no existe";
 		}
 
 	}
 
+	protected function prueba( $subject, $message ){
+		$array = array(); 
+		foreach( wire('users')->find("template=user") as $usuario) {	
+			if(  
+				!$usuario->hasRole("conservatorio") 
+				&& !$usuario->hasRole("superuser")
+				&& !$usuario->hasRole("pas")
+				&& !$usuario->hasRole("profesor")
+				&& !$usuario->hasRole("consejo")
+				&& $usuario->name!="guest"
+			) {
+				// wire('users')->delete($usuario);
+				array_push( $array, $usuario->name, $usuario->roles[1]->name ) ;
+			}
+
+		}
+		return json_encode($array);
+
+	}
 
 
 	/**
-	 * Crea un nuevo usuario en PW
+	 * NEEDS wireMail SMTP module to be installed and configured
 	 */
-	protected function registerUser($email2, $name, $email, $password, $password2 ){
+	protected function sendEmail( $from, $to, $subject, $message ){
+			$mail = wireMail();
+			$mail->to($to)->from($from); // all calls can be chained
+			$mail->subject($subject); 
+			// $mail->body($message);
+			$mail->bodyHTML($message); 
+			$mail->send(); 
+			return json_encode( ["from" => $from, "to" => $to, "subject" => $subject, "message" => $message,] );
+	}
 
-echo "ha llegado";
-return;
+	/**
+	 * Crea un nuevo usuario en PW
+	 * <input type="text" name="email2" id="email2">
+	 * <style type="text/css">#email2 { display: none; }</style
+	 */
+	// protected function registerUser($email2, $name, $email, $password, $password2 ){
+	protected function registerUser( $name, $email, $email2, $password, $password2 ){
+
+		$message = "";
 		/**
 		 * Check for spam and last 2 lines to the code
 		 */
-		if (trim($email2) != '') return 'spam';
-		// <input type="text" name="email2" id="email2">
-		// <style type="text/css">#email2 { display: none; }</style>		
+		
+		// SPAM
+		if (trim($email2) != '')  return json_encode( [ "message" => "spam"] );
+		
+		if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    		return json_encode( [ "message" => "El email no es valido"] );
+		}
 
 		// el usuario ya existe
 		if(wire('users')->get("email=$email")->id || wire('users')->get("name=$name")->id) { 
-			return "El usuario ya existe"; 
+			return json_encode( [ "message" => "El usuario ya existe"] );
 		}	
 
 		// las constraseña no coinciden
-		if($password!=$password2)
-            return '<div class="alert alert-danger"><i class="fa fa-frown-o"></i> <strong>Las contraseñas</strong> no coinciden</div>';
-		// 
+		if($password!=$password2 )
+			return json_encode( [ "message" => "Las contrasenas no coinciden"] );
+		if($password=="")
+			return json_encode( [ "message" => "Debes poner una contraseña"] );
+		
 		$pass = $password;
 		$u = new User();
 
-		// $u->$first_name = $sanitizer->text($input->post->first_name);
-		// $u->$last_name = $sanitizer->text($input->post->last_name);
 		$u->name= wire('sanitizer')->username($name); 
 		$u->email = wire('sanitizer')->email($email);
 		$u->pass = $pass;
@@ -167,7 +219,9 @@ return;
 		// $u->addRole("registrado");
 		$u->language = wire('languages')->get("default");
 		$u->save();
-		return 'usuario '.$u->name.' creado';
+
+		return json_encode( ["name" => $u->name, "password" => $u->pass, "message" => $message,] );
+
 
 
 	}
@@ -360,7 +414,7 @@ return;
 		$event->return = str_replace("<html", $newbody, $event->return);
 
 
-		$event->return = str_replace("</head>", $angular, $event->return); 
+		$event->return = str_replace("</head>", $event->return, $angular); 
 
 
 
@@ -545,6 +599,8 @@ return;
 		$array['language'] = "".wire("user")->language->title;
 		$event->return = json_encode($array);
 	}	
+
+
 
 	public function loginUser($event) {
       
